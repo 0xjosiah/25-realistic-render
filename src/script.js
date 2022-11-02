@@ -42,6 +42,8 @@ gltfLoader.load(
         glTF.scene.position.set(0,-4,0)
         glTF.scene.rotation.y = Math.PI * .5
         scene.add(glTF.scene)
+
+        gui.add(glTF.scene.rotation, 'y', -Math.PI, Math.PI, .001).name('rotation')
     }
 )
 
