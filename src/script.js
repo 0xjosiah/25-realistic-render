@@ -2,6 +2,13 @@ import './style.css'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import * as dat from 'lil-gui'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
+
+/**
+ * Loaders
+ */
+const gltfLoader = new GLTFLoader()
+
 
 /**
  * Base
@@ -25,9 +32,23 @@ const testSphere = new THREE.Mesh(
 scene.add(testSphere)
 
 /**
+ * Models
+ */
+gltfLoader.load(
+    '/models/FlightHelmet/glTF/FlightHelmet.gltf',
+    (glTF) => {
+        console.log(glTF, 'success');
+        glTF.scene.scale.set(10,10,10)
+        glTF.scene.position.set(0,-4,0)
+        glTF.scene.rotation.y = Math.PI * .5
+        scene.add(glTF.scene)
+    }
+)
+
+/**
  * Lights
  */
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
+const directionalLight = new THREE.DirectionalLight(0xffffff, 3)
 directionalLight.position.set(.25, 3, -2.25)
 scene.add(directionalLight)
 
@@ -79,6 +100,7 @@ const renderer = new THREE.WebGLRenderer({
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+renderer.physicallyCorrectLights = true
 
 /**
  * Animate
