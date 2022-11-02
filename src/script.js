@@ -8,6 +8,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader'
  * Loaders
  */
 const gltfLoader = new GLTFLoader()
+const cubeTextureLoader = new THREE.CubeTextureLoader()
 
 
 /**
@@ -15,6 +16,7 @@ const gltfLoader = new GLTFLoader()
  */
 // Debug
 const gui = new dat.GUI()
+const debugObj = {}
 
 // Canvas
 const canvas = document.querySelector('canvas.webgl')
@@ -23,13 +25,31 @@ const canvas = document.querySelector('canvas.webgl')
 const scene = new THREE.Scene()
 
 /**
- * Test sphere
+ * Update all materials
  */
-const testSphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 32, 32),
-    new THREE.MeshStandardMaterial()
-)
-scene.add(testSphere)
+const updateAllMaterials = () => {
+    scene.traverse((child) => {
+        if(child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
+            child.material.envMap = envMap
+            child.material.envMapIntensity = debugObj.envMapIntensity
+        }
+    })
+}
+
+/**
+ * Env map
+ */
+const envMap = cubeTextureLoader.load([
+    '/textures/environmentMaps/0/px.jpg',
+    '/textures/environmentMaps/0/nx.jpg',
+    '/textures/environmentMaps/0/py.jpg',
+    '/textures/environmentMaps/0/ny.jpg',
+    '/textures/environmentMaps/0/pz.jpg',
+    '/textures/environmentMaps/0/nz.jpg',
+])
+scene.background = envMap
+debugObj.envMapIntensity = 3
+gui.add(debugObj, 'envMapIntensity', 0, 10, .05).onChange(updateAllMaterials)
 
 /**
  * Models
@@ -44,6 +64,8 @@ gltfLoader.load(
         scene.add(glTF.scene)
 
         gui.add(glTF.scene.rotation, 'y', -Math.PI, Math.PI, .001).name('rotation')
+
+        updateAllMaterials()
     }
 )
 
