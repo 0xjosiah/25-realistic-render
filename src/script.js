@@ -20,9 +20,21 @@ const scene = new THREE.Scene()
  */
 const testSphere = new THREE.Mesh(
     new THREE.SphereGeometry(1, 32, 32),
-    new THREE.MeshBasicMaterial()
+    new THREE.MeshStandardMaterial()
 )
 scene.add(testSphere)
+
+/**
+ * Lights
+ */
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
+directionalLight.position.set(.25, 3, -2.25)
+scene.add(directionalLight)
+
+gui.add(directionalLight, 'intensity', 0, 10, .001).name('light intensity')
+gui.add(directionalLight.position, 'x', -5, 5, .001).name('light x')
+gui.add(directionalLight.position, 'y', -5, 5, .001).name('light y')
+gui.add(directionalLight.position, 'z', -5, 5, .001).name('light z')
 
 /**
  * Sizes
