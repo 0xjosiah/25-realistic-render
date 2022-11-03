@@ -32,6 +32,9 @@ const updateAllMaterials = () => {
         if(child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
             // child.material.envMap = envMap //easier way is down below scene.environment
             child.material.envMapIntensity = debugObj.envMapIntensity
+            child.material.needsUpdate = true
+            child.castShadow = true
+            child.receiveShadow = true
         }
     })
 }
@@ -47,8 +50,10 @@ const envMap = cubeTextureLoader.load([
     '/textures/environmentMaps/0/pz.jpg',
     '/textures/environmentMaps/0/nz.jpg',
 ])
+envMap.encoding = THREE.sRGBEncoding
 scene.background = envMap
 scene.environment = envMap // this easiest way to apply env map, the updateAllMaterials is useful for adding gui param
+
 debugObj.envMapIntensity = 3
 gui.add(debugObj, 'envMapIntensity', 0, 10, .05).onChange(updateAllMaterials)
 
@@ -56,11 +61,12 @@ gui.add(debugObj, 'envMapIntensity', 0, 10, .05).onChange(updateAllMaterials)
  * Models
  */
 gltfLoader.load(
-    '/models/FlightHelmet/glTF/FlightHelmet.gltf',
+    // '/models/FlightHelmet/glTF/FlightHelmet.gltf',
+    '/models/hamburger.glb',
     (glTF) => {
         console.log(glTF, 'success');
-        glTF.scene.scale.set(10,10,10)
-        glTF.scene.position.set(0,-4,0)
+        glTF.scene.scale.set(.3,.3,.3)
+        glTF.scene.position.set(0,-1,0)
         glTF.scene.rotation.y = Math.PI * .5
         scene.add(glTF.scene)
 
@@ -75,7 +81,14 @@ gltfLoader.load(
  */
 const directionalLight = new THREE.DirectionalLight(0xffffff, 3)
 directionalLight.position.set(.25, 3, -2.25)
+directionalLight.castShadow = true
+directionalLight.shadow.camera.far = 15
+directionalLight.shadow.mapSize.set(1024, 1024)
+directionalLight.shadow.normalBias = .05 // this helps fix 'shadow acne'; obj doesn't create shadow on itself; use bias (not normal bias) for flat obj
 scene.add(directionalLight)
+
+// const directionalLightCamHelp = new THREE.CameraHelper(directionalLight.shadow.camera)
+// scene.add(directionalLightCamHelp)
 
 gui.add(directionalLight, 'intensity', 0, 10, .001).name('light intensity')
 gui.add(directionalLight.position, 'x', -5, 5, .001).name('light x')
@@ -121,11 +134,27 @@ controls.enableDamping = true
  * Renderer
  */
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+    canvas: canvas,
+    antialias: true,
 })
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.physicallyCorrectLights = true
+renderer.outputEncoding = THREE.sRGBEncoding //can also use gamma encoding; 
+renderer.toneMapping = THREE.ReinhardToneMapping
+renderer.toneMappingExposure = 3
+renderer.shadowMap.enabled = true
+renderer.shadowMap.type = THREE.PCFSoftShadowMap
+
+gui.add(renderer, 'toneMappingExposure', 0, 10, .001)
+
+gui.add(renderer, 'toneMapping', {
+    no: THREE.NoToneMapping,
+    linear: THREE.LinearToneMapping,
+    reinhard: THREE.ReinhardToneMapping,
+    cineon: THREE.CineonToneMapping,
+    ACESFilmicToneMapping: THREE.ACESFilmicToneMapping
+})
 
 /**
  * Animate
